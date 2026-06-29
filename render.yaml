@@ -5,7 +5,7 @@ services:
     plan: free
     region: ohio # Match Supabase region for lowest latency
     # Limiting concurrency helps prevent out-of-memory errors on smaller build instances
-    buildCommand: npm install && npx turbo build --filter=manifest-backend --filter=manifest-frontend --filter=manifest-shared --concurrency=1
+    buildCommand: npm install --include=dev && npx turbo build --filter=manifest-backend --filter=manifest-frontend --filter=manifest-shared --concurrency=1
     startCommand: npm start
     healthCheckPath: /api/v1/health
     # autoDeploy: false prevents automatic deploys when upstream changes, so you can manually trigger them
