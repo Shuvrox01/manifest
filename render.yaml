@@ -7,7 +7,6 @@ services:
     # Limiting concurrency helps prevent out-of-memory errors on smaller build instances
     buildCommand: npm install && npx turbo build --filter=manifest-backend --filter=manifest-frontend --filter=manifest-shared --concurrency=1
     startCommand: npm start
-    preDeployCommand: npm run migration:run:prod --workspace=packages/backend
     healthCheckPath: /api/v1/health
     # autoDeploy: false prevents automatic deploys when upstream changes, so you can manually trigger them
     autoDeploy: false
@@ -18,8 +17,6 @@ services:
         value: 0.0.0.0
       - key: TRUST_PROXY
         value: "1"
-      - key: RUN_MIGRATIONS_ON_BOOT
-        value: "false"
       # Limits memory usage to 400MB to avoid OOM crashes on 512MB Free Tier
       - key: NODE_OPTIONS
         value: "--max-old-space-size=400"
@@ -32,3 +29,9 @@ services:
       # Connect your Supabase Postgres URL (Ohio region)
       - key: DATABASE_URL
         value: postgresql://postgres.xxxx:password@aws-0-us-east-2.pooler.supabase.com:6543/postgres # Replace with actual Supabase connection string
+
+databases:
+  - name: manifest-db
+    databaseName: manifest
+    user: manifest
+    plan: free
