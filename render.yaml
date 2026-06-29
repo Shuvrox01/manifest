@@ -17,9 +17,6 @@ services:
         value: 0.0.0.0
       - key: TRUST_PROXY
         value: "1"
-      # Limits memory usage to 400MB to avoid OOM crashes on 512MB Free Tier
-      - key: NODE_OPTIONS
-        value: "--max-old-space-size=400"
       # Set to 'true' to disable new signups after you've created your account
       - key: DISABLE_SIGNUP
         value: "false" 
