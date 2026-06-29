@@ -182,6 +182,11 @@ export async function bootstrap() {
   });
   expressApp.use('/api/auth/sign-in', loginLimiter);
   expressApp.use('/api/auth/sign-up', signupLimiter);
+  if (process.env['DISABLE_SIGNUP'] === 'true') {
+    expressApp.use('/api/auth/sign-up', (req: express.Request, res: express.Response) => {
+      res.status(403).json({ error: 'Signups are disabled for security.' });
+    });
+  }
   expressApp.use('/api/auth/forget-password', forgetPasswordLimiter);
   expressApp.use('/api/auth/forgot-password', forgetPasswordLimiter);
   expressApp.use('/api/auth/reset-password', forgetPasswordLimiter);
