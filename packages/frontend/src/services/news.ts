@@ -21,11 +21,4 @@ export interface NewsItem {
   cta: string;
 }
 
-export const CURRENT_NEWS: NewsItem | null = {
-  id: 'best-ai-subscription-2026-06',
-  title: "The best AI subscription isn't the one you think",
-  blurb: 'Discover our AI subscription tier list and pick the plan that actually fits you.',
-  thumbnail: '/news/best-ai-subscription.jpg',
-  href: 'https://www.youtube.com/watch?v=scA_qaC9c08',
-  cta: 'Watch',
-};
+export const CURRENT_NEWS: NewsItem | null = null;
