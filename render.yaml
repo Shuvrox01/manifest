@@ -4,31 +4,49 @@ services:
     env: node
     plan: free
     region: ohio # Match Supabase region for lowest latency
-    # Limiting concurrency helps prevent out-of-memory errors on smaller build instances
+    # NODE_OPTIONS is set here for BUILD time only — overriding in startCommand for runtime
     buildCommand: export NODE_OPTIONS="--max-old-space-size=4096" && npm install --include=dev && npx turbo build --filter=manifest-backend --filter=manifest-frontend --filter=manifest-shared --concurrency=1
     startCommand: npm start
     healthCheckPath: /api/v1/health
-    # autoDeploy: false prevents automatic deploys when upstream changes, so you can manually trigger them
+    # autoDeploy: false = manual upstream sync only (one-click deploy in Render dashboard)
     autoDeploy: false
     envVars:
       - key: NODE_ENV
         value: production
+
       - key: BIND_ADDRESS
         value: 0.0.0.0
+
       - key: TRUST_PROXY
         value: "1"
-      # Set to 'true' to disable new signups after you've created your account
-      - key: DISABLE_SIGNUP
-        value: "false" 
-      # Provide your Render app URL
-      - key: BETTER_AUTH_URL
-        value: https://manifest-app.onrender.com 
-      # Connect your Supabase Postgres URL (Ohio region)
-      - key: DATABASE_URL
-        value: postgresql://postgres.xxxx:password@aws-0-us-east-2.pooler.supabase.com:6543/postgres # Replace with actual Supabase connection string
 
-databases:
-  - name: manifest-db
-    databaseName: manifest
-    user: manifest
-    plan: free
+      # Runtime memory limit (400MB of 512MB free tier, leaving headroom for OS)
+      - key: NODE_OPTIONS
+        value: "--max-old-space-size=400"
+
+      # Disable upstream telemetry for privacy
+      - key: MANIFEST_TELEMETRY_DISABLED
+        value: "1"
+
+      # ─── SECURITY: Set ALL of these before first deploy ───────────────────
+      # Your Render app URL (update after first deploy)
+      - key: BETTER_AUTH_URL
+        value: https://manifest-rck1.onrender.com
+
+      # REQUIRED: min 32 chars, used for session signing
+      # Generate: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+      - key: BETTER_AUTH_SECRET
+        value: CHANGE_ME_TO_A_64_CHAR_RANDOM_SECRET
+
+      # REQUIRED: separate key for at-rest encryption of stored API keys
+      # Generate: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+      - key: MANIFEST_ENCRYPTION_KEY
+        value: CHANGE_ME_TO_A_DIFFERENT_64_CHAR_SECRET
+
+      # Set to 'true' AFTER you have created your account to lock signups
+      - key: DISABLE_SIGNUP
+        value: "false"
+
+      # Your database URL (Supabase Ohio, transaction mode port 6543)
+      - key: DATABASE_URL
+        value: CHANGE_ME_TO_YOUR_SUPABASE_URL
