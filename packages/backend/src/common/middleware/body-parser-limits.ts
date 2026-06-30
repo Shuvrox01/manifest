@@ -1,8 +1,8 @@
 import * as express from 'express';
 
 export const API_BODY_LIMIT = '1mb';
-export const PROXY_BODY_LIMIT = '512mb';
-export const PROXY_BODY_LIMIT_BYTES = 512 * 1024 * 1024;
+export const PROXY_BODY_LIMIT = '20mb';
+export const PROXY_BODY_LIMIT_BYTES = 20 * 1024 * 1024;
 
 interface BodyParserError extends Error {
   status?: number;

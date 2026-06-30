@@ -21,7 +21,7 @@ function createDatabaseConnection() {
   // traffic is light relative to ingest, hence a smaller default than the app
   // pool. Idle connections are reaped after 30s to free server-side slots.
   const max = Number(process.env['AUTH_DB_POOL_MAX'] ?? 10);
-  return new Pool({ connectionString: databaseUrl, max, idleTimeoutMillis: 30000 });
+  return new Pool({ connectionString: databaseUrl, max, idleTimeoutMillis: 15000 });
 }
 
 const database = createDatabaseConnection();

@@ -60,7 +60,7 @@ import { shouldRetryDbConnection } from '../common/utils/db-retry';
           // undefined case to fall back from — keep that file the single source
           // of truth for the pool size.
           max: config.get<number>('app.dbPoolMax'),
-          idleTimeoutMillis: 30000,
+          idleTimeoutMillis: 15000,
           // statement_timeout / idle_in_transaction_session_timeout were tried
           // here (#1745) and via the `options` connection string (#1749), but
           // Railway's PgBouncer rejects both forms — its
