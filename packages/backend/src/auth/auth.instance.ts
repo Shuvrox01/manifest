@@ -1,4 +1,6 @@
 import { betterAuth } from 'better-auth';
+import { createAuthMiddleware } from 'better-auth/plugins';
+import { APIError } from 'better-auth/api';
 import { render } from '@react-email/render';
 import { VerifyEmailEmail } from '../notifications/emails/verify-email';
 import { ResetPasswordEmail } from '../notifications/emails/reset-password';
@@ -128,6 +130,30 @@ export const auth = betterAuth({
     },
   },
   trustedOrigins: buildTrustedOrigins(),
+  hooks: {
+    before: [
+      // ── SECURITY: Owner-only access enforcement ──────────────────────────
+      // If ALLOWED_EMAIL is set, only that exact email can sign in or sign up.
+      // This runs inside Better Auth after body parsing — no stream issues.
+      {
+        matcher: (ctx: { path: string }) =>
+          ctx.path === '/sign-in/email' || ctx.path === '/sign-up/email',
+        handler: createAuthMiddleware(async (ctx) => {
+          const allowedEmail = process.env['ALLOWED_EMAIL']?.trim().toLowerCase();
+          if (!allowedEmail) return; // Not configured → allow all (dev mode)
+
+          const body = ctx.body as { email?: string } | null | undefined;
+          const requestEmail = (body?.email ?? '').trim().toLowerCase();
+
+          if (requestEmail !== allowedEmail) {
+            throw new APIError('FORBIDDEN', {
+              message: 'Access denied.',
+            });
+          }
+        }),
+      },
+    ],
+  },
 });
 
 export type AuthSession = typeof auth.$Infer.Session;
