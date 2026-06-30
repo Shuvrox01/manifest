@@ -1,6 +1,4 @@
 import { betterAuth } from 'better-auth';
-import { createAuthMiddleware } from 'better-auth/plugins';
-import { APIError } from 'better-auth/api';
 import { render } from '@react-email/render';
 import { VerifyEmailEmail } from '../notifications/emails/verify-email';
 import { ResetPasswordEmail } from '../notifications/emails/reset-password';
@@ -131,28 +129,27 @@ export const auth = betterAuth({
   },
   trustedOrigins: buildTrustedOrigins(),
   hooks: {
-    before: [
-      // ── SECURITY: Owner-only access enforcement ──────────────────────────
-      // If ALLOWED_EMAIL is set, only that exact email can sign in or sign up.
-      // This runs inside Better Auth after body parsing — no stream issues.
-      {
-        matcher: (ctx: { path: string }) =>
-          ctx.path === '/sign-in/email' || ctx.path === '/sign-up/email',
-        handler: createAuthMiddleware(async (ctx) => {
-          const allowedEmail = process.env['ALLOWED_EMAIL']?.trim().toLowerCase();
-          if (!allowedEmail) return; // Not configured → allow all (dev mode)
+    // ── SECURITY: Owner-only access enforcement ─────────────────────────────────────
+    // If ALLOWED_EMAIL env var is set, only that exact email can attempt
+    // sign-in or sign-up. All other emails receive a 403 before any
+    // password check or account creation occurs.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    before: async (ctx: any) => {
+      if (ctx.path !== '/sign-in/email' && ctx.path !== '/sign-up/email') {
+        return;
+      }
+      const allowedEmail = process.env['ALLOWED_EMAIL']?.trim().toLowerCase();
+      if (!allowedEmail) return; // Not configured → dev mode, allow all
 
-          const body = ctx.body as { email?: string } | null | undefined;
-          const requestEmail = (body?.email ?? '').trim().toLowerCase();
-
-          if (requestEmail !== allowedEmail) {
-            throw new APIError('FORBIDDEN', {
-              message: 'Access denied.',
-            });
-          }
-        }),
-      },
-    ],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const requestEmail = ((ctx.body as any)?.email ?? '').trim().toLowerCase();
+      if (requestEmail !== allowedEmail) {
+        return new Response(
+          JSON.stringify({ error: 'Access denied.' }),
+          { status: 403, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+    },
   },
 });
 
