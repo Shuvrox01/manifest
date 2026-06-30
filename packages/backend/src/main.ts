@@ -183,39 +183,6 @@ export async function bootstrap() {
   expressApp.use('/api/auth/sign-in', loginLimiter);
   expressApp.use('/api/auth/sign-up', signupLimiter);
 
-  // ── SECURITY: Owner-only login enforcement ──────────────────────────────
-  // If ALLOWED_EMAIL is set, only that exact email may attempt sign-in.
-  // All other accounts are rejected before Better Auth even processes them.
-  const allowedEmail = process.env['ALLOWED_EMAIL']?.trim().toLowerCase();
-  if (allowedEmail) {
-    expressApp.use(
-      '/api/auth/sign-in',
-      (req: express.Request, res: express.Response, next: express.NextFunction) => {
-        // Better Auth sends credentials as JSON body
-        let body = '';
-        req.on('data', (chunk) => (body += chunk));
-        req.on('end', () => {
-          try {
-            const parsed = JSON.parse(body);
-            const requestEmail = (parsed?.email ?? '').trim().toLowerCase();
-            if (requestEmail !== allowedEmail) {
-              res.status(403).json({ error: 'Access denied.' });
-              return;
-            }
-          } catch {
-            // If body is not JSON, let Better Auth handle it
-          }
-          // Re-attach body so Better Auth can read it
-          req.headers['content-length'] = Buffer.byteLength(body).toString();
-          const readable = require('stream').Readable.from([Buffer.from(body)]);
-          Object.assign(req, readable);
-          next();
-        });
-      },
-    );
-    logger.log('Owner-only login enforcement active for: ' + allowedEmail);
-  }
-
   // ── SECURITY: Disable signup entirely if DISABLE_SIGNUP=true ───────────
   if (process.env['DISABLE_SIGNUP'] === 'true') {
     expressApp.use('/api/auth/sign-up', (_req: express.Request, res: express.Response) => {
