@@ -1,8 +1,14 @@
 import * as express from 'express';
 
 export const API_BODY_LIMIT = '1mb';
-export const PROXY_BODY_LIMIT = '20mb';
-export const PROXY_BODY_LIMIT_BYTES = 20 * 1024 * 1024;
+
+// Configurable via PROXY_BODY_LIMIT_MB env var (integer, megabytes).
+// Default: 20MB — safe for Render's 512MB free tier while covering large
+// AI context windows and code files. Raise this on paid tiers with more RAM.
+// Example: set PROXY_BODY_LIMIT_MB=50 in Render dashboard for more headroom.
+const _proxyLimitMb = Math.max(1, parseInt(process.env['PROXY_BODY_LIMIT_MB'] ?? '20', 10) || 20);
+export const PROXY_BODY_LIMIT = `${_proxyLimitMb}mb`;
+export const PROXY_BODY_LIMIT_BYTES = _proxyLimitMb * 1024 * 1024;
 
 interface BodyParserError extends Error {
   status?: number;
