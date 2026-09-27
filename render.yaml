@@ -34,8 +34,6 @@ services:
         value: filesystem
       - key: REQUEST_RECORDING_FILESYSTEM_PATH
         value: /data/request-recordings
-      - key: NODE_OPTIONS
-        value: --max-old-space-size=400
 
 databases:
   - name: manifest-postgres
