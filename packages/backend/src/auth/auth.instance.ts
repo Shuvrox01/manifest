@@ -260,6 +260,7 @@ const pluginAuth = betterAuth({
   advanced: {
     ipAddress: {
       ipAddressHeaders: ['x-forwarded-for'],
+      trustedProxies: true,
     },
   },
   plugins: buildPlugins(),
