@@ -257,12 +257,6 @@ const pluginAuth = betterAuth({
   secret: betterAuthSecret,
   logger: { level: 'debug' },
   telemetry: { enabled: false },
-  advanced: {
-    ipAddress: {
-      ipAddressHeaders: ['x-forwarded-for'],
-      trustedProxies: true,
-    },
-  },
   plugins: buildPlugins(),
   session: {
     // Validate sessions from a signed cookie instead of the database. The two
