@@ -463,8 +463,14 @@ export class ProviderClient {
         : undefined;
     // Affinity headers are routing-critical and must win over caller-supplied
     // extraHeaders (provider-side observability hints), so they spread last.
-    const finalHeaders =
-      affinity || extraHeaders ? { ...headers, ...extraHeaders, ...affinity?.headers } : headers;
+    const finalHeaders: Record<string, string> =
+      affinity || extraHeaders ? { ...headers, ...extraHeaders, ...affinity?.headers } : { ...headers };
+
+    // Inject a realistic User-Agent to bypass strict Cloudflare/WAFs on upstream providers
+    // (like custom endpoints) if one wasn't explicitly supplied.
+    if (!Object.keys(finalHeaders).some((k) => k.toLowerCase() === 'user-agent')) {
+      finalHeaders['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+    }
 
     const retryWireBody = async (
       wireRequestBody: Record<string, unknown>,
