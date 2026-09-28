@@ -138,8 +138,6 @@ export async function bootstrap() {
 
   const expressApp = app.getHttpAdapter().getInstance();
 
-  // Drop Ollama bot scanner connections instantly to prevent log spam
-  expressApp.post('/api/show', (req: express.Request, res: express.Response) => req.socket.destroy());
 
   expressApp.use(httpErrorLogger);
 
